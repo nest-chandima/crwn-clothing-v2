@@ -5,9 +5,17 @@ import Athentication from "./routes/authentication/authentication.component";
 import Shop from "./routes/shop/shop.component";
 import Checkout from "./routes/checkout/checkout.component";
 
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { checkUserSession } from "./store/user/user.action";
 
 const App = () => {
 
+  const dispatch  = useDispatch();
+  useEffect(()=>{
+        dispatch(checkUserSession());
+    },[]);
+    
   return (
     <Routes>
       <Route path="/" element={<Navigation />}>

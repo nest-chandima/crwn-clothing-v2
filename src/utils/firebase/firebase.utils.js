@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, createUserWithEmailAndPassword, GoogleAuthProvider, signOut, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, writeBatch, query, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, writeBatch, query, getDocs, DocumentSnapshot } from 'firebase/firestore';
 
 
 const firebaseConfig = {
@@ -44,15 +44,19 @@ export const getCategoriesAndDocuments = async() => {
     const q = query(collectionRef);
 
     const querySnaapshot = await getDocs(q);
-    const categoryMap = querySnaapshot.docs.reduce((acc, docSnapshot) => {
-        const { title, items } = docSnapshot.data();
-        acc[title.toLowerCase()] = items;
-        return acc;
-    }, {});
-    return categoryMap;
+    return querySnaapshot.docs.map((docSnapshot) => docSnapshot.data());
+
+
+    // .reduce((acc, docSnapshot) => {
+    //     const { title, items } = docSnapshot.data();
+    //     acc[title.toLowerCase()] = items;
+    //     return acc;
+    // }, {});
+    // return categoryMap;
 }
 
 export const createUserDocumentFromAuth = async(userAuth, additionalInformation = {}) => {
+    // console.log('OKAYYYYYY', userAuth);
     if (!userAuth) return;
 
     const userDocRef = doc(db, 'users', userAuth.uid);
@@ -75,7 +79,7 @@ export const createUserDocumentFromAuth = async(userAuth, additionalInformation 
         }
     }
 
-    return userDocRef;
+    return userSnapshot;
 
 };
 
@@ -100,3 +104,16 @@ export const SignAuthUserWithEmailAndPassword = async(email, password) => {
 export const SignOutUser = async() => await signOut(auth);
 
 export const OnAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback);
+
+export const getCurruntUser = () => {
+    return new Promise((resolve, reject) => {
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            (userAuth) => {
+                unsubscribe();
+                resolve(userAuth);
+            },
+            reject
+        );
+    })
+}
